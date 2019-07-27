@@ -80,6 +80,7 @@ public class Principal implements Initializable {
                 Alert alert = criarAlertaDeException(err);
                 alert.setTitle(resources.getString("falhaLista"));
                 alert.setHeaderText(err.getMessage());
+                alert.showAndWait();
             }
         }));
         serviceDecodificar.stateProperty().addListener((a, b, c) -> {
