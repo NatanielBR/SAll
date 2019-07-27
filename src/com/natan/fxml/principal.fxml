@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TextField?>
@@ -12,8 +11,7 @@
         <Pane fx:id="desativar" layoutX="12.0" layoutY="14.0">
             <children>
                 <ListView fx:id="lista" layoutY="34.0" prefHeight="432.0" prefWidth="447.0"/>
-                <ChoiceBox fx:id="decos" layoutX="294.0" prefWidth="150.0"/>
-                <TextField fx:id="busca" layoutX="2.0" prefHeight="25.0" prefWidth="285.0"/>
+                <TextField fx:id="busca" layoutX="2.0" prefHeight="25.0" prefWidth="447.0"/>
             </children>
         </Pane>
         <Label fx:id="status" layoutX="14.0" layoutY="497.0" prefHeight="17.0" prefWidth="447.0"/>

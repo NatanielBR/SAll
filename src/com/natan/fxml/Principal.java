@@ -13,6 +13,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -22,9 +23,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("ALL")
@@ -32,32 +34,32 @@ public class Principal implements Initializable {
     @FXML
     private ListView<Anime> lista;
     @FXML
-    private ChoiceBox<Decodificador> decos;
-    @FXML
     private Label status;
     @FXML
     private TextField busca;
     @FXML
     private Pane desativar;
-    private AtomicReference<Decodificador> decodificador;
+    private Decodificador[] decodificadores;
     private List<Anime> decoRaiz;
-
-    public Principal() {
-        decodificador = new AtomicReference<>();
-    }
+    private HashMap<String, ImageView> decosIm;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        ServiceDecodificar serviceDecodificar = new ServiceDecodificar(decodificador);
+        decodificadores = new Decodificador[]{new DecoAB(), new DecoSA()};
+        ServiceDecodificar serviceDecodificar = new ServiceDecodificar(decodificadores);
+        decosIm = new HashMap<>();
         TaskUpdate taskUpdate = new TaskUpdate();
-
-        decos.setItems(FXCollections.observableArrayList(new DecoAB(), new DecoSA()));
-        decos.getSelectionModel().select(0);
-        decos.getSelectionModel().selectedItemProperty().addListener((a, b, c) -> {
-            decodificador.set(c);
-            serviceDecodificar.restart();
+        lista.setCellFactory(param -> {
+            return new ListCell<Anime>() {
+                @Override
+                protected void updateItem(Anime item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty) return;
+                    setText(item.getNome());
+                    setGraphic(new ImageView(item.getNomeDoDecodificador() + ".png"));
+                }
+            };
         });
-        decodificador.set(decos.getValue()); //selecionar Anbient
         busca.textProperty().addListener((a, b, c) -> {
             if (!c.isEmpty()) {
                 final String cc = c.toLowerCase();
@@ -73,6 +75,7 @@ public class Principal implements Initializable {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            lista.getSelectionModel().clearSelection();
         });
         status.setOnMouseClicked((event -> {
             if (status.getUserData() != null) {
@@ -83,6 +86,7 @@ public class Principal implements Initializable {
                 alert.showAndWait();
             }
         }));
+
         serviceDecodificar.stateProperty().addListener((a, b, c) -> {
             busca.setText("");
             if (c.equals(Worker.State.RUNNING)) {
@@ -94,8 +98,10 @@ public class Principal implements Initializable {
                 status.setUserData(serviceDecodificar.getException());
                 desativar.setDisable(false);
             } else if (c.equals(Worker.State.SUCCEEDED)) {
-                Decodificado value = serviceDecodificar.getValue();
-                decoRaiz = value.getAnimeList();
+                List<Anime> animes = new ArrayList<>();
+                for (Decodificado decodificado : serviceDecodificar.getValue()) {
+                    animes.addAll(decodificado.getAnimeList());
+                }
                 lista.setItems(FXCollections.observableList(decoRaiz));
                 int quantidade = lista.getItems().size();
                 status.setText(MessageFormat.format(resources.getString("okLista"), quantidade,

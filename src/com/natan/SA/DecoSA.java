@@ -43,6 +43,11 @@ public class DecoSA implements Decodificador {
     }
 
     @Override
+    public String getNomeDoDecodificador() {
+        return "sakura animes";
+    }
+
+    @Override
     public String toString() {
         return "DecoSA";
     }

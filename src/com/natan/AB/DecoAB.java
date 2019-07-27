@@ -54,6 +54,11 @@ public class DecoAB implements Decodificador {
     }
 
     @Override
+    public String getNomeDoDecodificador() {
+        return "anbient";
+    }
+
+    @Override
     public String toString() {
         return "DecoAB";
     }

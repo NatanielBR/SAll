@@ -5,21 +5,26 @@ import com.natan.abs.Decodificador;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ServiceDecodificar extends Service<Decodificado> {
-    private AtomicReference<Decodificador> decodificador;
+public class ServiceDecodificar extends Service<List<Decodificado>> {
+    private Decodificador[] decodificador;
 
-    public ServiceDecodificar(AtomicReference<Decodificador> decodificador) {
+    public ServiceDecodificar(Decodificador[] decodificador) {
         this.decodificador = decodificador;
     }
 
     @Override
-    protected Task<Decodificado> createTask() {
-        return new Task<Decodificado>() {
+    protected Task<List<Decodificado>> createTask() {
+        return new Task<List<Decodificado>>() {
             @Override
-            protected Decodificado call() throws Exception {
-                return decodificador.get().decodificar();
+            protected List<Decodificado> call() throws Exception {
+                List<Decodificado> decodificados = new ArrayList<>();
+                for (Decodificador decor : decodificador) {
+                    decodificados.add(decor.decodificar());
+                }
+                return decodificados;
             }
         };
     }
