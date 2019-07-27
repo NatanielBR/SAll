@@ -10,11 +10,16 @@ import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 
 import java.awt.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.List;
@@ -69,13 +74,23 @@ public class Principal implements Initializable {
                 e.printStackTrace();
             }
         });
+        status.setOnMouseClicked((event -> {
+            if (status.getUserData() != null) {
+                Exception err = (Exception) status.getUserData();
+                Alert alert = criarAlertaDeException(err);
+                alert.setTitle(resources.getString("falhaLista"));
+                alert.setHeaderText(err.getMessage());
+            }
+        }));
         serviceDecodificar.stateProperty().addListener((a, b, c) -> {
             busca.setText("");
             if (c.equals(Worker.State.RUNNING)) {
                 status.setText(resources.getString("obterLista"));
+                status.setUserData(null);
                 desativar.setDisable(true);
             } else if (c.equals(Worker.State.FAILED)) {
                 status.setText(resources.getString("falhaLista"));
+                status.setUserData(serviceDecodificar.getException());
                 desativar.setDisable(false);
             } else if (c.equals(Worker.State.SUCCEEDED)) {
                 Decodificado value = serviceDecodificar.getValue();
@@ -84,6 +99,7 @@ public class Principal implements Initializable {
                 int quantidade = lista.getItems().size();
                 status.setText(MessageFormat.format(resources.getString("okLista"), quantidade,
                         quantidade > 1 ? resources.getString("animePlural") : resources.getString("animeSingular")));
+                status.setUserData(null);
                 desativar.setDisable(false);
             }
         });
@@ -104,5 +120,36 @@ public class Principal implements Initializable {
         });
         new Thread(taskUpdate).start();
 
+    }
+
+    private Alert criarAlertaDeException(Exception ex) {
+        //Codigo não criado por mim, porem foi modificado
+        //Codigo original: https://code.makery.ch/blog/javafx-dialogs-official/
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+
+        // Create expandable Exception.
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        ex.printStackTrace(pw);
+        String exceptionText = sw.toString();
+
+        TextArea textArea = new TextArea(exceptionText);
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+
+        textArea.setMaxWidth(Double.MAX_VALUE);
+        textArea.setMaxHeight(Double.MAX_VALUE);
+        GridPane.setVgrow(textArea, Priority.ALWAYS);
+        GridPane.setHgrow(textArea, Priority.ALWAYS);
+
+        GridPane expContent = new GridPane();
+        expContent.setMaxWidth(Double.MAX_VALUE);
+        expContent.add(textArea, 0, 0);
+
+        // Set expandable Exception into the dialog pane.
+        alert.getDialogPane().setExpandableContent(expContent);
+
+        alert.showAndWait();
+        return alert;
     }
 }
